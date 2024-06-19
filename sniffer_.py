@@ -22,7 +22,7 @@ if __name__ == "__main__":
         t = AsyncSniffer(filter=f"host {ip_address} and port {port}", prn=process_packet, store=0, iface=None, timeout=None)
         t.start()
         print("パケット監視中...")
-        print("終了時は何かキーを押してください")
+        print("終了時はCtrl+Cを押してください")
         while(1):
             pass
     except:
