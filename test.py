@@ -20,6 +20,74 @@ def decimal_to_hex(num):
         
         return data
 
+## deleting stupid heartbeats stuff
+
+f = open("data", "r")
+data = f.read()
+
+# ca9637ae89e1e0cec358a6c4080045000028
+tmp = []
+while True:
+    idx_start = data.find("ca9637ae89e1e0cec358a6c4080045000028")
+    if idx_start == -1:
+        break
+    data = data[idx_start:]  # 開始インデックスを更新
+    idx_end = data.find("e0cec358a6c4ca")
+    if idx_end == -1:
+        break
+    tmp.append(data[:idx_end])  # 終了インデックスまでのデータを追加
+    data = data[idx_end:]  # 残りのデータを更新
+f.close()
+
+f = open("data", "r")
+rep = f.read()
+f.close()
+f = open("data", "w")
+for words in tmp:
+    rep = rep.replace(words, "")
+f.write(rep)
+f.close()
+
+f = open("data", "r")
+data = f.read()
+
+# ca9637ae89e10800450005 ?
+tmp = []
+while True:
+    idx_start = data.find("ca9637ae89e10800450005")
+    if idx_start == -1:
+        break
+    data = data[idx_start:]  # 開始インデックスを更新
+    idx_end = 96
+    if idx_end == -1:
+        break
+    tmp.append(data[:idx_end])  # 終了インデックスまでのデータを追加
+    data = data[idx_end:]  # 残りのデータを更新
+f.close()
+
+f = open("data", "r")
+rep = f.read()
+f.close()
+f = open("data", "w")
+for words in tmp:
+    rep = rep.replace(words, "")
+f.write(rep)
+f.close()
+
+# e0cec358a6c4
+tmp = []
+tmp.append("e0cec358a6c4")
+
+f = open("data", "r")
+rep = f.read()
+f.close()
+f = open("data", "w")
+for words in tmp:
+    rep = rep.replace(words, "")
+f.write(rep)
+f.close()
+
+## getting bot info stuff
 f = open("data", "r")
 data = f.read()
 
@@ -115,7 +183,6 @@ with open("cube_database.csv", "r") as f:
 
 for i in range(len(cubeData)):
     f = open("bots/" + bytes.fromhex(robotNames[i]).decode(encoding='utf-8') + ".bot", "w")
-
     cubes = {}
     for cube in cubeDatabase.keys():
         if cube in cubeData[i]:
@@ -124,11 +191,11 @@ for i in range(len(cubeData)):
     # JSONデータを作成
     data = {
         "id": 0,
-        "name": bytes.fromhex(robotNames[i]).decode(encoding='utf-8'),
+        "name": bytes.fromhex(robotNames[i]).decode(encoding='ISO-8859-1'),
         "description": "",
         "thumbnail": "",
-        "addedBy": bytes.fromhex(name[i]).decode(encoding='utf-8'),
-        "addedByDisplayName": bytes.fromhex(displayname[i]).decode(encoding='utf-8'),
+        "addedBy": bytes.fromhex(name[i]).decode(encoding="ISO-8859-1"),
+        "addedByDisplayName": bytes.fromhex(displayname[i]).decode(encoding="ISO-8859-1"),
         "addedDate": "",
         "expiryDate": "",
         "cpu": 0,
