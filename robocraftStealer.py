@@ -277,7 +277,7 @@ if __name__ == "__main__":
             elif user == "n":
                 save = input("パケットデータ(通常は不要)を保存しますか? Yes:[y] No:[n]")
                 if save == "n":
-                    l = glob.glob('./data-*')
+                    l = glob.glob('./data*')
                     for file in l:
                         os.remove(file)
                 exit(0)
