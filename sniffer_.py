@@ -20,7 +20,7 @@ def process_packet(packet):
 # メインプログラム
 if __name__ == "__main__":
     try:
-        t = AsyncSniffer(filter=f"host {ip_address} and port {port}", prn=process_packet, store=0, iface=None, timeout=None)
+        t = AsyncSniffer(filter=f"src host {ip_address} and src port {port}", prn=process_packet, count=0, store=0, iface=None, timeout=None)
         t.start()
         print("パケット監視中...")
         print("終了時はCtrl+Cを押してください")

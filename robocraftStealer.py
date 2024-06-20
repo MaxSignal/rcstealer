@@ -254,14 +254,14 @@ def packetAnalyser():
 
 # メインプログラム
 if __name__ == "__main__":
-    t = AsyncSniffer(filter=f"host {ip_address} and port {port}", prn=process_packet, store=0, iface=None, timeout=None)
+    t = AsyncSniffer(filter=f"src host {ip_address} and src port {port}", prn=process_packet, count=0, store=0, iface=None, timeout=None)
     while(True):
         try:
             t.start()
             print("パケット監視中...")
             print("取得機体時はCtrl+Cを押してください")
             while(1):
-                pass
+                time.sleep(60)
         except KeyboardInterrupt:
             t.stop()
             f = open("./data", "w")
@@ -276,9 +276,12 @@ if __name__ == "__main__":
                 os.rename("./data", "./data-" + str(int(time.time())))
             elif user == "n":
                 save = input("パケットデータ(通常は不要)を保存しますか? Yes:[y] No:[n]")
-                if save == "n":
+                if save == "y":
+                    os.rename("./data", "./data-" + str(int(time.time())))
+                elif save == "n":
                     l = glob.glob('./data*')
                     for file in l:
                         os.remove(file)
+
                 exit(0)
 
