@@ -15,15 +15,16 @@ pattern = b'\x63\x6F\x6C\x6F\x75\x72\x4D\x61\x70\x78'
 ip_address = '162.19.204.42'  # 監視するIPアドレス
 # crf?:4533 singleplayer?:4537 multiplayer?:4541
 port = 4541  # 監視するポート番号
+conf.bufsize *= 10
 
-data = ""
+data = []
 # パケットを受信して保存する関数
 def process_packet(packet):
     global data
     raw_data = bytes(packet)
 
     # パケットを保存する処理（ここでは単純に標準出力に表示）
-    data += str(raw_data.hex())
+    data.append(raw_data.hex())
 
 def decimal_to_hex(num):
         # 10進数の数値を16進数文字列に変換する
@@ -258,47 +259,59 @@ def start_sniffing():
 
 # メインプログラム
 def main():
-    global data
     print("起動中...")
     sniff_thread = threading.Thread(target=start_sniffing)
     sniff_thread.daemon = True
     sniff_thread.start()
 
     while(1):
+        idx = 0
         print("パケット監視中...")
-        print("取得機体確認時はCtrl+Cを押してください... ")
+        print("終了するときはCtrl+Cを押してください... ")
         try:
             while(1):
+                combinedData = ''.join(data)
+                while(1):
+                    #ユーザ名があるか確認(最後の行なので)
+                    idx_start = combinedData[idx:].rfind("046e616d6573")
+                    if idx_start == -1:
+                        break
+
+                    idx_start = idx_start + 16
+                    idx_end = combinedData[idx_start:].find("7300")
+                    if idx_end == -1:
+                        break
+
+                    idx_end = idx_end + 4
+                    oidx = idx # データの始まり
+                    idx = idx + idx_start + idx_end  # データの最後
+
+                    f = open("./data", "w")
+                    f.write(combinedData[oidx:idx])
+                    f.close()
+
+                    packetAnalyser()
+                    break
                 time.sleep(1)
         except KeyboardInterrupt:
             f = open("./data", "w")
-            f.write(data)
+            f.write(''.join(data))
             f.close()
-
-            packetAnalyser()
             os.rename("./data", "./data-" + str(int(time.time())))
-
+            
             while(1):
-                user = input("再開しますか？ Yes:[y] No:[n] > ")
-                if user == "y" or user == "yes":
-                    data = ""
+                save = input("パケットデータ(通常は不要)を保存しますか? Yes:[y] No:[n] > ")
+                if save == "y":
                     break
-                elif user == "n" or user == "no":
-                    while(1):
-                        save = input("パケットデータ(通常は不要)を保存しますか? Yes:[y] No:[n] > ")
-                        if save == "y":
-                            break
-                        elif save == "n":
-                            l = glob.glob('./data*')
-                            for file in l:
-                                os.remove(file)
-                            break
-                        else:
-                            print("yかnを入力してください")
-                            
-                    return
+                elif save == "n":
+                    l = glob.glob('./data*')
+                    for file in l:
+                        os.remove(file)
+                    break
                 else:
                     print("yかnを入力してください")
+                    
+            return
 
 if __name__ == "__main__":
     main()
