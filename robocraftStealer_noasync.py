@@ -310,8 +310,10 @@ def main():
                 f.write(combinedData)
                 f.close()
                 os.rename("./data", "./data-" + str(int(time.time())))
+                break
             elif save == "n":
                 os.remove('./data')
+                break
             else:
                 print("yかnを入力してください")
                 
