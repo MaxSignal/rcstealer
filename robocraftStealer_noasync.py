@@ -7,6 +7,9 @@ import csv
 import os
 import sys
 import threading
+import ctypes
+
+ctypes.windll.kernel32.SetConsoleTitleW("robocraftStealer")
 
 # 受信するパケットの条件
 # cubedata_pattern = b'\x63\x75\x62\x65\x4D\x61\x70\x78\x00\x00'
