@@ -214,14 +214,14 @@ def packetAnalyser():
         if idx_start == -1:
             break
         data = data[idx_start + 10:]  # 開始インデックスを更新
-        if data == "00":
+        if data[:2] == "00":
             ai.append(False)
         else:
             ai.append(True)
-        data = data[idx_start + 12:]
+        data = data[2:]
 
     f.close()
-
+    
     cubeDatabase = {}
     csv_file_path = os.path.join(sys._MEIPASS, 'cube_database.csv')
     with open(csv_file_path, "r") as f:
