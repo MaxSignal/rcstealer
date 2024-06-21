@@ -46,6 +46,7 @@ def packetAnalyser():
     robotNames = []
     name = []
     colourData = []
+    ai = []
     ## deleting stupid heartbeats stuff
 
     f = open("./data", "r")
@@ -204,6 +205,23 @@ def packetAnalyser():
 
     f.close()
 
+    f = open("./data", "r")
+    data = f.read()
+
+    #isAI
+    while True:
+        idx_start = data.find("69734149")
+        if idx_start == -1:
+            break
+        data = data[idx_start + 10:]  # 開始インデックスを更新
+        if data == "00":
+            ai.append(False)
+        else:
+            ai.append(True)
+        data = data[idx_start + 12:]
+
+    f.close()
+
     cubeDatabase = {}
     csv_file_path = os.path.join(sys._MEIPASS, 'cube_database.csv')
     with open(csv_file_path, "r") as f:
@@ -214,18 +232,29 @@ def packetAnalyser():
 
     if not os.path.exists("./bots"):
         os.makedirs("./bots")
+        os.makedirs("./bots/AI")
+    elif not os.path.exists("./bots/AIs"):
+        os.makedirs("./bots/AIs")
 
     print("総機体数: " + str(len(cubeData)))
     for i in range(len(cubeData)):
-        f = open("./bots/" + bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w")
+        if ai[i]:
+            f = open("./bots/AIs/" + bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w")
+        else:
+            f = open("./bots/" + bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w")
         cubes = {}
         for cube in cubeDatabase.keys():
             if cube in cubeData[i]:
                 cubes[cubeDatabase[cube]] = str(cubeData[i]).count(cube)
 
-        print("Save " + bytes.fromhex(robotNames[i]).decode(encoding='utf-8') + " by " + \
-              bytes.fromhex(displayname[i]).decode(encoding="utf-8") + " as " + \
-                bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) +".bot")
+        if ai[i]:
+            print("Save " + bytes.fromhex(robotNames[i]).decode(encoding='utf-8') + " by " + \
+                bytes.fromhex(displayname[i]).decode(encoding="utf-8") + "(AI) as " + \
+                    bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) +".bot")
+        else:
+            print("Save " + bytes.fromhex(robotNames[i]).decode(encoding='utf-8') + " by " + \
+                bytes.fromhex(displayname[i]).decode(encoding="utf-8") + " as " + \
+                    bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) +".bot")
 
         # JSONデータを作成
         data = {
