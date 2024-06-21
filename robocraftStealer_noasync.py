@@ -6,7 +6,6 @@ import json
 import csv
 import os
 import sys
-import glob
 import threading
 
 # 受信するパケットの条件
@@ -18,13 +17,13 @@ port = 4541  # 監視するポート番号
 conf.bufsize *= 10
 
 data = []
-# パケットを受信して保存する関数
-def process_packet(packet):
-    global data
-    raw_data = bytes(packet)
+# # パケットを受信して保存する関数
+# def process_packet(packet):
+#     global data
+#     raw_data = bytes(packet)
 
-    # パケットを保存する処理（ここでは単純に標準出力に表示）
-    data.append(raw_data.hex())
+#     # パケットを保存する処理（ここでは単純に標準出力に表示）
+#     data.append(raw_data.hex())
 
 def decimal_to_hex(num):
         # 10進数の数値を16進数文字列に変換する
@@ -215,7 +214,7 @@ def packetAnalyser():
 
     print("総機体数: " + str(len(cubeData)))
     for i in range(len(cubeData)):
-        f = open("./bots/" + bytes.fromhex(robotNames[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w")
+        f = open("./bots/" + bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w")
         cubes = {}
         for cube in cubeDatabase.keys():
             if cube in cubeData[i]:
@@ -223,7 +222,7 @@ def packetAnalyser():
 
         print("Save " + bytes.fromhex(robotNames[i]).decode(encoding='utf-8') + " by " + \
               bytes.fromhex(displayname[i]).decode(encoding="utf-8") + " as " + \
-                bytes.fromhex(robotNames[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) +".bot")
+                bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) +".bot")
 
         # JSONデータを作成
         data = {
@@ -255,7 +254,8 @@ def packetAnalyser():
         f.close()
 
 def start_sniffing():
-    sniff(filter=f"src host {ip_address} and src port {port}", prn=process_packet, count=0, store=0, iface=None, timeout=None)
+    global data
+    sniff(filter=f"tcp and src host {ip_address} and src port {port}", prn=lambda pkts: data.append(pkts), count=0, store=0, iface=None, timeout=None)
 
 # メインプログラム
 def main():
@@ -264,54 +264,58 @@ def main():
     sniff_thread.daemon = True
     sniff_thread.start()
 
-    while(1):
-        idx = 0
-        print("パケット監視中...")
-        print("終了するときはCtrl+Cを押してください... ")
-        try:
-            while(1):
-                combinedData = ''.join(data)
-                while(1):
-                    #ユーザ名があるか確認(最後の行なので)
-                    idx_start = combinedData[idx:].rfind("046e616d6573")
-                    if idx_start == -1:
-                        break
+    idx = 0
+    print("パケット監視中...")
+    print("終了するときはCtrl+Cを押してください... ")
+        
+    try:
+        while(1):
+            time.sleep(1)
+            combinedData = []
+            for pkts in data:
+                combinedData.append(bytes(pkts).hex())
+            combinedData = ''.join(combinedData)
 
-                    idx_start = idx_start + 16
-                    idx_end = combinedData[idx_start:].find("7300")
-                    if idx_end == -1:
-                        break
+            #ユーザ名があるか確認(最後の行なので)
+            idx_start = combinedData[idx:].rfind("046e616d6573")
+            if idx_start == -1:
+                continue
 
-                    idx_end = idx_end + 4
-                    oidx = idx # データの始まり
-                    idx = idx + idx_start + idx_end  # データの最後
+            idx_start = idx + idx_start + 16
+            idx_end = combinedData[idx_start:].find("7300")
+            if idx_end == -1:
+                continue
 
-                    f = open("./data", "w")
-                    f.write(combinedData[oidx:idx])
-                    f.close()
+            idx_end = idx_start + idx_end + 4
+            # print(combinedData[idx_start:idx_end]) debug
 
-                    packetAnalyser()
-                    break
-                time.sleep(1)
-        except KeyboardInterrupt:
-            f = open("./data", "w")
-            f.write(''.join(data))
-            f.close()
-            os.rename("./data", "./data-" + str(int(time.time())))
+            oidx = idx
+            idx = idx_end  # データの最後
             
-            while(1):
-                save = input("パケットデータ(通常は不要)を保存しますか? Yes:[y] No:[n] > ")
-                if save == "y":
-                    break
-                elif save == "n":
-                    l = glob.glob('./data*')
-                    for file in l:
-                        os.remove(file)
-                    break
-                else:
-                    print("yかnを入力してください")
-                    
-            return
+            f = open("./data", "w")
+            f.write(combinedData[oidx:idx])
+            f.close()
+
+            packetAnalyser()
+    except KeyboardInterrupt:        
+        while(1):
+            save = input("パケットデータ(通常は不要)を保存しますか? Yes:[y] No:[n] > ")
+            if save == "y":
+                combinedData = []
+                for pkts in data:
+                    combinedData.append(bytes(pkts).hex())
+                combinedData = ''.join(combinedData)
+
+                f = open("./data", "w")
+                f.write(combinedData)
+                f.close()
+                os.rename("./data", "./data-" + str(int(time.time())))
+            elif save == "n":
+                os.remove('./data')
+            else:
+                print("yかnを入力してください")
+                
+        return
 
 if __name__ == "__main__":
     main()
