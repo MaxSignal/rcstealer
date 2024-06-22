@@ -224,7 +224,7 @@ def packetAnalyser():
     
     cubeDatabase = {}
     csv_file_path = os.path.join(sys._MEIPASS, 'cube_database.csv')
-    with open(csv_file_path, "r") as f:
+    with open(csv_file_path, "r", encoding="utf-8") as f:
         reader = csv.reader(f)
         for row in reader:
             if row[1].isdecimal():
@@ -239,9 +239,9 @@ def packetAnalyser():
     print("総機体数: " + str(len(cubeData)))
     for i in range(len(cubeData)):
         if ai[i]:
-            f = open("./bots/AIs/" + bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w")
+            f = open("./bots/AIs/" + bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w", encoding="utf-8")
         else:
-            f = open("./bots/" + bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w")
+            f = open("./bots/" + bytes.fromhex(displayname[i]).decode(encoding='utf-8') + "_" + str(int(time.time())) + ".bot", "w", encoding="utf-8")
         cubes = {}
         for cube in cubeDatabase.keys():
             if cube in cubeData[i]:
@@ -281,7 +281,7 @@ def packetAnalyser():
         }
 
         # JSONを文字列に変換
-        json_string = json.dumps(data, indent=4)
+        json_string = json.dumps(data, indent=4, ensure_ascii=False)
         f.write(json_string)
         f.close()
 
@@ -338,7 +338,7 @@ def main():
                     combinedData.append(bytes(pkts).hex())
                 combinedData = ''.join(combinedData)
 
-                f = open("./data", "w")
+                f = open("./data", "w", encoding="utf-8")
                 f.write(combinedData)
                 f.close()
                 os.rename("./data", "./data-" + str(int(time.time())))
